@@ -2,7 +2,6 @@ import asyncio
 import logging
 import random
 import time
-import psutil
 import config
 from nexichat import _boot_
 from nexichat import get_readable_time
