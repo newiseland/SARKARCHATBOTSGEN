@@ -4,9 +4,7 @@ import random
 import time
 import config
 
-from nexichat import get_readable_time
 from nexichat import nexichat, mongo
-from datetime import datetime
 from pymongo import MongoClient
 from pyrogram.enums import ChatType
 from pyrogram import Client, filters
