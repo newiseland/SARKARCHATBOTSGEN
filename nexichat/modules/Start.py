@@ -16,6 +16,50 @@ users_collection = db["Users"]
 # Bot client
 nexichat = Client("nexichat")
 
+@nexichat.on_cmd(["start", "start"])
+async def start(_, m: Message):
+    if m.chat.type == ChatType.PRIVATE:
+        accha = await m.reply_text(
+            text=random.choice(EMOJIOS),
+        )
+        await asyncio.sleep(1.3)
+        await accha.edit("__𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐁𝐚𝐛𝐲 ꨄ︎ 𝐖𝐚𝐢𝐭..🥵__")
+        await asyncio.sleep(0.2)
+        await accha.edit("__𝐇𝐞𝐲 𝐁𝐚𝐛𝐲 ꨄ 𝐇𝐨𝐰 𝐀𝐫𝐞 𝐘𝐨𝐮⚡.....__")
+        await asyncio.sleep(0.2)
+        await accha.edit("__𝐁𝐨𝐭 𝐒𝐭𝐚𝐫𝐭𝐢𝐧𝐠 ꨄ︎ 𝐁𝐚𝐛𝐲📍..__")
+        await asyncio.sleep(0.2)
+        await accha.delete()
+        umm = await m.reply_sticker(sticker=random.choice(STICKER))
+        await asyncio.sleep(2)
+        await umm.delete()
+        await m.reply_photo(
+            photo=random.choice(IMG),
+            caption=f"""**:╭───────────────────⦿
+│❖ 𝖧ᴇʏ ɪ'ᴍ ᴄʜᴀᴛʙᴏᴛ  ✨
+├───────────────────⦿
+│✦ ɪ ʜᴀᴠᴇ ᴍᴀɢɪᴄ ғᴇᴀᴛᴜʀᴇs.
+│❍ 𝖠ᴅᴠᴀɴᴄᴇᴅ ᴀɪ ʙᴀsᴇᴅ ᴄʜᴀᴛʙᴏᴛ.
+├───────────────────⦿
+│✦ ɪ'ᴍ ꜱᴍᴀʀᴛ & ᴀʙᴜꜱᴇʟᴇꜱꜱ ᴄʜᴀᴛʙᴏᴛ.
+│❍ ɪ ᴄᴀɴ ʜᴇʟᴘ ᴀᴄᴛɪᴠᴇ ʏᴏᴜʀ ɢʀᴏᴜᴘ.
+│✦ ᴍᴜʟᴛɪ-ʟᴀɴɢ ꜱᴜᴘᴘᴏʀᴛ ʙʏ /lang.
+│❍ 𝖢ʟɪᴄᴋ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ғᴏʀ ʜᴇʟᴘs.
+│✦ I ᴄᴀɴ ᴛᴇʟʟ ʏᴏᴜ ᴛɪᴍᴇ ɪꜰ ʏᴏᴜ ᴀꜱᴋ.
+├───────────────────⦿
+│❍ Aᴄᴛɪᴠᴇ ᴜꜱᴇʀꜱ : 40000 🎉
+│❖ ϻᴀᴅᴇ ʙʏ [𝐒𝐀𝐑𝐊𝐀𝐑 ✯ 𝐎𝐏](https://t.me/ll_SARKAR_OWNER_ll) 💞
+╰───────────────────⦿) """,
+            reply_markup=InlineKeyboardMarkup(DEV_OP),
+        )
+        await add_served_user(m.from_user.id)
+    else:
+        await m.reply_photo(
+            photo=random.choice(IMG),
+            caption=START,
+            reply_markup=InlineKeyboardMarkup(HELP_START),
+        )
+        await add_served_chat(m.chat.id)
 # Broadcast lock and flag
 broadcast_lock = asyncio.Lock()
 IS_BROADCASTING = False
