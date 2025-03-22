@@ -1,10 +1,12 @@
 import asyncio
 import logging
+import random
 from pymongo import MongoClient
 from pyrogram import Client, filters
 from pyrogram.enums import ChatType
 from pyrogram.types import Message
 from pyrogram.errors import FloodWait
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from config import OWNER_ID, MONGO_URL
 
 # Initialize MongoDB
@@ -14,12 +16,25 @@ chats_collection = db["Chats"]
 users_collection = db["Users"]
 
 # Bot client
+nexichat = Client("nexichat")
+
+# Sticker & Image Lists
+STICKERS = [
+    "CAACAgUAAx0CYlaJawABBy4vZaieO6T-Ayg3mD-JP-f0yxJngIkAAv0JAALVS_FWQY7kbQSaI-geBA",
+    "CAACAgUAAx0CYlaJawABBy4rZaid77Tf70SV_CfjmbMgdJyVD8sAApwLAALGXCFXmCx8ZC5nlfQeBA",
+]
+
+IMG_LIST = [
+    "https://graph.org/file/1ac13effa55a82dc9b881-2bf2ae8fd65ca218ac.jpg",
+    "https://graph.org/file/9f12dc2a668d40875deb5.jpg",
+    "https://graph.org/file/c698fa9b221772c2a4f3a.jpg",
+]
 
 # Broadcast lock and flag
 broadcast_lock = asyncio.Lock()
 IS_BROADCASTING = False
 
-# Helper functions
+# MongoDB helper functions
 async def get_served_chats():
     return list(chats_collection.find())
 
@@ -33,6 +48,39 @@ async def get_served_users():
 async def add_served_user(user_id):
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
+
+# Start command
+@nexichat.on_message(filters.command("start"))
+async def start_cmd(client, message: Message):
+    if message.chat.type == ChatType.PRIVATE:
+        await add_served_user(message.from_user.id)
+        sticker = await message.reply_sticker(random.choice(STICKERS))
+        await asyncio.sleep(1.5)
+        await sticker.delete()
+        await message.reply_photo(
+            photo=random.choice(IMG_LIST),
+            caption="**Hey! I'm alive and ready to chat!**",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Help", callback_data="help")],
+                [InlineKeyboardButton("Repo", url="https://github.com/your-repo")],
+            ])
+        )
+    else:
+        await add_served_chat(message.chat.id)
+        await message.reply_photo(
+            photo=random.choice(IMG_LIST),
+            caption="Thanks for adding me to the group!"
+        )
+
+# Stats command
+@nexichat.on_message(filters.command("stats"))
+async def stats_cmd(client, message: Message):
+    users = len(await get_served_users())
+    chats = len(await get_served_chats())
+    await message.reply_photo(
+        photo=random.choice(IMG_LIST),
+        caption=f"**Bot Stats:**\n\n• Users: {users}\n• Chats: {chats}"
+    )
 
 # Broadcast command
 @nexichat.on_message(filters.command(["broadcast", "gcast"]) & filters.user(int(OWNER_ID)))
@@ -74,7 +122,6 @@ async def broadcast_message(client, message: Message):
                         m = await client.forward_messages(chat_id, message.chat.id, [broadcast_content.id])
                     else:
                         m = await client.send_message(chat_id, broadcast_content)
-
                     sent += 1
 
                     if flags["-pin"] or flags["-pinloud"]:
@@ -113,14 +160,7 @@ async def broadcast_message(client, message: Message):
 
         IS_BROADCASTING = False
 
-# Stats command
-@nexichat.on_message(filters.command("stats"))
-async def stats(client, message: Message):
-    users = len(await get_served_users())
-    chats = len(await get_served_chats())
-    await message.reply_text(f"**Stats:**\nChats: {chats}\nUsers: {users}")
-
-# Start bot
+# Start the bot
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     print("Bot started.")
