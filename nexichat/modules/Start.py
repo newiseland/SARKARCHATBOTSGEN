@@ -7,65 +7,26 @@ from pyrogram.enums import ChatType
 from pyrogram.types import Message
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from config import OWNER_ID, MONGO_URL(
-    START,
-    START_BOT,
-    PNG_BTN,
-    CLOSE_BTN,
-    HELP_BTN,
-    HELP_BUTN,
-    HELP_READ,
-    HELP_START,
-    SOURCE_READ,
-)
+from config import OWNER_ID, MONGO_URL
 
-GSTART = """**ʜᴇʏ ᴅᴇᴀʀ {}**\n\n**ᴛʜᴀɴᴋs ғᴏʀ sᴛᴀʀᴛ ᴍᴇ ɪɴ ɢʀᴏᴜᴘ ʏᴏᴜ ᴄᴀɴ ᴄʜᴀɴɢᴇ ʟᴀɴɢᴜᴀɢᴇ ʙʏ ᴄʟɪᴄᴋ ᴏɴ ɢɪᴠᴇɴ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴs.**\n**ᴄʟɪᴄᴋ ᴀɴᴅ sᴇʟᴇᴄᴛ ʏᴏᴜʀ ғᴀᴠᴏᴜʀɪᴛᴇ ʟᴀɴɢᴜᴀɢᴇ ᴛᴏ sᴇᴛ ᴄʜᴀᴛ ʟᴀɴɢᴜᴀɢᴇ ғᴏʀ ʙᴏᴛ ʀᴇᴘʟʏ.**\n\n**ᴛʜᴀɴᴋ ʏᴏᴜ ᴘʟᴇᴀsᴇ ᴇɴɪᴏʏ.**"""
-STICKER = [
-    "CAACAgUAAx0CYlaJawABBy4vZaieO6T-Ayg3mD-JP-f0yxJngIkAAv0JAALVS_FWQY7kbQSaI-geBA",
-    "CAACAgUAAx0CYlaJawABBy4rZaid77Tf70SV_CfjmbMgdJyVD8sAApwLAALGXCFXmCx8ZC5nlfQeBA",
-    "CAACAgUAAx0CYlaJawABBy4jZaidvIXNPYnpAjNnKgzaHmh3cvoAAiwIAAIda2lVNdNI2QABHuVVHgQ",
-]
-
-
-EMOJIOS = [
-    "💣",
-    "💥",
-    "🪄",
-    "🧨",
-    "⚡",
-    "🤡",
-    "👻",
-    "🎃",
-    "🎩",
-    "🕊",
-]
-
-BOT = "https://envs.sh/IL_.jpg"
-IMG = [
-    "https://graph.org/file/210751796ff48991b86a3.jpg",
-    "https://graph.org/file/7b4924be4179f70abcf33.jpg",
-    "https://graph.org/file/f6d8e64246bddc26b4f66.jpg",
-    "https://graph.org/file/63d3ec1ca2c965d6ef210.jpg",
-    "https://graph.org/file/9f12dc2a668d40875deb5.jpg",
-    "https://graph.org/file/0f89cd8d55fd9bb5130e1.jpg",
-    "https://graph.org/file/e5eb7673737ada9679b47.jpg",
-    "https://graph.org/file/2e4dfe1fa5185c7ff1bfd.jpg",
-    "https://graph.org/file/36af423228372b8899f20.jpg",
-    "https://graph.org/file/c698fa9b221772c2a4f3a.jpg",
-    "https://graph.org/file/61b08f41855afd9bed0ab.jpg",
-    "https://graph.org/file/744b1a83aac76cb3779eb.jpg",
-    "https://graph.org/file/814cd9a25dd78480d0ce1.jpg",
-    "https://graph.org/file/e8b472bcfa6680f6c6a5d.jpg",
-]
-
-# Initialize MongoDB
-mongo = MongoClient(MONGO_URL)
-db = mongo["ChatBotStatusDb"]
-chats_collection = db["Chats"]
-users_collection = db["Users"]
-
-# Bot client
-nexichat = Client("nexichat")
+# Optional: import extra constants if needed
+try:
+    from nexichat.modules.helpers import (
+        START,
+        START_BOT,
+        PNG_BTN,
+        CLOSE_BTN,
+        HELP_BTN,
+        HELP_BUTN,
+        HELP_READ,
+        HELP_START,
+        SOURCE_READ,
+    )
+except ImportError:
+    START = "**Hey! I'm alive and ready to chat!**"
+    START_BOT = [[InlineKeyboardButton("Help", callback_data="help")]]
+    HELP_BTN = [[InlineKeyboardButton("More Info", callback_data="info")]]
+    # Add other fallbacks as needed
 
 # Sticker & Image Lists
 STICKERS = [
@@ -74,16 +35,25 @@ STICKERS = [
 ]
 
 IMG_LIST = [
-    "https://graph.org/file/1ac13effa55a82dc9b881-2bf2ae8fd65ca218ac.jpg",
+    "https://graph.org/file/210751796ff48991b86a3.jpg",
     "https://graph.org/file/9f12dc2a668d40875deb5.jpg",
     "https://graph.org/file/c698fa9b221772c2a4f3a.jpg",
 ]
 
-# Broadcast lock and flag
+# MongoDB Setup
+mongo = MongoClient(MONGO_URL)
+db = mongo["ChatBotStatusDb"]
+chats_collection = db["Chats"]
+users_collection = db["Users"]
+
+# Bot client
+nexichat = Client("nexichat")
+
+# Broadcast lock
 broadcast_lock = asyncio.Lock()
 IS_BROADCASTING = False
 
-# MongoDB helper functions
+# Helper DB Functions
 async def get_served_chats():
     return list(chats_collection.find())
 
@@ -98,7 +68,7 @@ async def add_served_user(user_id):
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
 
-# Start command
+# Start Command
 @nexichat.on_message(filters.command("start"))
 async def start_cmd(client, message: Message):
     if message.chat.type == ChatType.PRIVATE:
@@ -108,11 +78,8 @@ async def start_cmd(client, message: Message):
         await sticker.delete()
         await message.reply_photo(
             photo=random.choice(IMG_LIST),
-            caption="**Hey! I'm alive and ready to chat!**",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Help", callback_data="help")],
-                [InlineKeyboardButton("Repo", url="https://github.com/your-repo")],
-            ])
+            caption=START,
+            reply_markup=InlineKeyboardMarkup(START_BOT),
         )
     else:
         await add_served_chat(message.chat.id)
@@ -121,7 +88,7 @@ async def start_cmd(client, message: Message):
             caption="Thanks for adding me to the group!"
         )
 
-# Stats command
+# Stats Command
 @nexichat.on_message(filters.command("stats"))
 async def stats_cmd(client, message: Message):
     users = len(await get_served_users())
@@ -131,14 +98,14 @@ async def stats_cmd(client, message: Message):
         caption=f"**Bot Stats:**\n\n• Users: {users}\n• Chats: {chats}"
     )
 
-# Broadcast command
+# Broadcast Command
 @nexichat.on_message(filters.command(["broadcast", "gcast"]) & filters.user(int(OWNER_ID)))
 async def broadcast_message(client, message: Message):
     global IS_BROADCASTING
     async with broadcast_lock:
         if IS_BROADCASTING:
             return await message.reply_text("A broadcast is already in progress. Please wait.")
-        
+
         IS_BROADCASTING = True
         try:
             query = message.text.split(None, 1)[1].strip()
@@ -179,7 +146,6 @@ async def broadcast_message(client, message: Message):
                             pin_count += 1
                         except Exception:
                             continue
-
                 except FloodWait as e:
                     await asyncio.sleep(e.value)
                 except Exception as e:
