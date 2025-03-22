@@ -3,7 +3,7 @@ import logging
 import random
 import time
 import config
-from nexichat import _boot_
+
 from nexichat import get_readable_time
 from nexichat import nexichat, mongo
 from datetime import datetime
